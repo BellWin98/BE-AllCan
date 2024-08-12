@@ -1,4 +1,4 @@
-package com.beallcan.global.security;
+package com.beallcan.global.config.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

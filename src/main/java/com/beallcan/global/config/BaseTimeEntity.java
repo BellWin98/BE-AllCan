@@ -1,4 +1,4 @@
-package com.beallcan.global;
+package com.beallcan.global.config;
 
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;

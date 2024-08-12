@@ -1,6 +1,6 @@
 package com.beallcan.domain.member.entity;
 
-import com.beallcan.global.BaseTimeEntity;
+import com.beallcan.global.config.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
