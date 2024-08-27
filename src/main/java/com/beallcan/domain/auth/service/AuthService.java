@@ -1,12 +1,18 @@
 package com.beallcan.domain.auth.service;
 
+import com.beallcan.domain.auth.dto.request.SignUpRequest;
 import com.beallcan.domain.auth.exception.CodeMismatchException;
+import com.beallcan.domain.member.dto.response.MemberResponse;
+import com.beallcan.domain.member.entity.Member;
+import com.beallcan.domain.member.entity.Role;
 import com.beallcan.domain.member.exception.EmailDuplicateException;
+import com.beallcan.domain.member.exception.NicknameDuplicateException;
 import com.beallcan.domain.member.repository.MemberRepository;
 import com.beallcan.global.config.mail.MailService;
 import com.beallcan.global.config.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
@@ -21,6 +27,20 @@ public class AuthService {
     private final MemberRepository memberRepository;
     private final RedisService redisService;
     private final MailService mailService;
+    private final PasswordEncoder passwordEncoder;
+
+    /**
+     * 회원가입
+     */
+    public MemberResponse signUp(final SignUpRequest signUpRequest) {
+
+        checkEmailDuplicate(signUpRequest.getEmail());
+        checkNicknameDuplicate(signUpRequest.getNickname());
+
+        Member createdMember = signUpRequest.toEntity(passwordEncoder, Role.ROLE_USER);
+
+        return MemberResponse.from(memberRepository.save(createdMember));
+    }
 
     /**
      * 이메일 중복 검증
@@ -29,6 +49,15 @@ public class AuthService {
 
         if (memberRepository.findByEmail(email).isPresent()){
             throw new EmailDuplicateException();
+        }
+    }
+
+    /**
+     * 닉네임 중복 검증
+     */
+    public void checkNicknameDuplicate(final String nickname) {
+        if (memberRepository.findByNickname(nickname).isPresent()){
+            throw new NicknameDuplicateException();
         }
     }
 
