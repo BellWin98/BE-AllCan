@@ -1,5 +1,8 @@
 package com.beallcan.global.config.security;
 
+import com.beallcan.domain.member.repository.MemberRepository;
+import com.beallcan.global.config.security.jwt.JwtAuthenticationFilter;
+import com.beallcan.global.config.security.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -25,6 +29,9 @@ public class SecurityConfig {
             "/api/auth",
             "/api/auth/**"
     };
+
+    private final JwtProvider jwtProvider;
+    private final MemberRepository memberRepository;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -62,7 +69,11 @@ public class SecurityConfig {
                                 .requestMatchers("/").permitAll()
                                 .requestMatchers(AUTH_API_URL).permitAll()
                                 .anyRequest().authenticated()
-                );
+                )
+                // addFilterBefore(A,B): B필터 이전에 A필터가 동작하도록 하는 메서드
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+
+        ;
 
         return httpSecurity.build();
     }
@@ -70,5 +81,10 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder(){
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtProvider, memberRepository);
     }
 }
